@@ -61,6 +61,16 @@ connection. Sequence: short transaction to insert a `RUNNING` run → AI call �
 deletes old AI cases, inserts the new ones and marks the run `SUCCESS` atomically. On failure the run
 becomes `FAILED` with a reason and existing data is untouched.
 
+**A real bug the tests found: an InnoDB deadlock** (`TestCaseService.replaceAiCases`,
+`StoryService.lockForUpdate`). Unit and integration tests run on H2 and passed. When I ran the API
+suite in parallel against the Docker stack (MySQL 8.4), two generations for *different* stories
+deadlocked. `DELETE FROM test_cases WHERE story_id = ? AND source = 'AI'` uses a secondary index, and
+under REPEATABLE READ InnoDB takes **gap locks**; two transactions holding neighbouring gaps then
+block each other's inserts. Fix: lock the story row first (`SELECT … FOR UPDATE` by primary key,
+which also serialises generations of the *same* story so they can't duplicate cases), then delete old
+AI cases **by primary key** (record locks only). A regression test fires seven parallel generations,
+and CI now runs the API suite against MySQL, not just H2.
+
 **AI output is validated twice.** Pydantic in the AI engine, then Bean Validation on the backend's
 `AiTestCase` record. Defence in depth: the backend never trusts another service blindly.
 
@@ -170,7 +180,7 @@ masked.
 
 ---
 
-## 8. Twenty likely interview questions
+## 8. Likely interview questions
 
 1. **Why does another user's project return 404 and not 403?**
    403 confirms the ID exists. 404 for both "missing" and "not yours" prevents ID enumeration. The
@@ -258,6 +268,12 @@ masked.
     is where prompt and eval work is fastest. The backend talks to it through a small, validated
     contract with timeouts.
 
-20. **If you had another week, what would you add?**
+20. **Tell me about a bug your tests found.**
+    Concurrent generations deadlocked on MySQL but not on H2: a range `DELETE` on a secondary index
+    took InnoDB gap locks that blocked the other transaction's inserts. I reproduced it with parallel
+    API calls, fixed it with a primary-key row lock plus delete-by-id, added a regression test, and
+    made CI run the API suite against MySQL so the test database can no longer hide it.
+
+21. **If you had another week, what would you add?**
     Asynchronous generation with progress events, rate limiting and token budgets, contract tests
     between backend and AI engine, cross-browser Playwright projects, and OpenTelemetry tracing.

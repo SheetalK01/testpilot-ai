@@ -11,7 +11,7 @@ cases — then turns them into a ready-to-run Playwright script or a formatted E
 
 [![CI](https://github.com/SheetalK01/testpilot-ai/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SheetalK01/testpilot-ai/actions/workflows/ci.yml)
 ![Service coverage](https://img.shields.io/badge/service%20coverage-99%25-brightgreen)
-![Tests](https://img.shields.io/badge/tests-258%20automated-brightgreen)
+![Tests](https://img.shields.io/badge/tests-261%20automated-brightgreen)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 <br />
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
@@ -171,14 +171,14 @@ is set without a key, the AI engine logs a warning and falls back to mock mode.
 
 ## Testing
 
-**258 automated tests** across every layer, all running in CI against the mock AI.
+**261 automated tests** across every layer, all running in CI against the mock AI.
 
 | Suite | Tool | Tests | Command |
 |---|---|---|---|
-| Backend unit + integration | JUnit 5, MockMvc, Mockito, H2 | 90 | `cd testpilot_backend && ./mvnw verify` |
+| Backend unit + integration | JUnit 5, MockMvc, Mockito, H2 | 92 | `cd testpilot_backend && ./mvnw verify` |
 | AI engine | pytest (Anthropic client mocked) | 51 | `cd ai_engine && .venv/bin/pytest --cov` |
 | E2E UI journeys | Playwright (POM + fixtures) | 27 | `cd e2e && npx playwright test --project=ui` |
-| API contracts, boundaries, security | Playwright request | 72 | `npx playwright test --project=api` |
+| API contracts, boundaries, security | Playwright request | 73 | `npx playwright test --project=api` |
 | Accessibility (light + dark) | axe-core | 14 | `npx playwright test --project=a11y` |
 | Visual regression | Playwright screenshots | 4 | `npx playwright test --project=visual` |
 | Performance smoke | k6 (10 VUs × 30 s, p95 < 500 ms) | 1 scenario | `k6 run perf/smoke.js` |
@@ -189,6 +189,9 @@ npx playwright test                 # all projects; starts AI engine, backend an
 npx playwright test --grep @smoke   # tags: @smoke @regression @api @security @a11y @visual
 npx playwright show-report
 ```
+
+CI also runs the API and security suites against the real Docker stack (MySQL 8.4 behind Nginx),
+which is how a MySQL-only deadlock under concurrent generations was found and fixed.
 
 Coverage: the backend's JaCoCo report is at `testpilot_backend/target/site/jacoco/index.html`; the
 build fails if service classes drop below 80 % line coverage (currently ~99 %, 96.8 % overall).
@@ -240,6 +243,14 @@ Swagger UI: **http://localhost:8080/swagger-ui.html**. Full reference with examp
 | Test cases | `GET/POST /api/stories/{id}/test-cases`, `PUT/DELETE /api/test-cases/{id}` |
 | AI | `POST /api/stories/{id}/generate`, `POST /api/stories/{id}/playwright` |
 | Export & dashboard | `GET /api/stories/{id}/export`, `GET /api/dashboard` |
+
+## Troubleshooting
+
+- **Backend container restarts with "Access denied for user"**: MySQL applies `MYSQL_*` only when its
+  volume is first created. After changing those values run `docker compose down -v` (this deletes the
+  local database) and start again.
+- **Port already in use**: `dev-local.sh` uses 8080, 8000 and 5173; Docker uses 3000 and 8080. Stop
+  the other stack first.
 
 ## Deployment
 
