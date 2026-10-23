@@ -17,12 +17,13 @@ env:
   PYTHON_VERSION: '3.12'
   JAVA_VERSION: '17'
   # Every automated test uses the deterministic mock AI: free, fast and repeatable.
+  # Runners are pinned to Ubuntu 24.04 so font rendering matches the committed Linux visual baselines.
   AI_MODE: mock
 
 jobs:
   lint:
     name: Lint (ESLint, Prettier, Ruff)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -59,7 +60,7 @@ jobs:
   backend:
     name: Backend (JUnit + JaCoCo)
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
@@ -92,7 +93,7 @@ jobs:
   ai-engine:
     name: AI engine (pytest)
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ai_engine
@@ -113,7 +114,7 @@ jobs:
   frontend:
     name: Frontend (build)
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -130,7 +131,7 @@ jobs:
   e2e:
     name: E2E (Playwright UI, API, a11y, visual)
     needs: [backend, ai-engine, frontend]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -186,7 +187,7 @@ jobs:
   perf:
     name: Docker stack (API suite on MySQL + k6 smoke)
     needs: e2e
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
