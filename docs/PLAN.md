@@ -1,5 +1,8 @@
 # TestPilot AI — Project Plan
 
+> **Note:** this is the high-level overview. The final, detailed and authoritative specification is
+> [`BUILD_SPEC.md`](BUILD_SPEC.md) (v2). Where they differ, BUILD_SPEC.md wins.
+
 AI-powered test case generator. A QA engineer pastes a user story, the AI writes structured test
 cases (positive, negative, edge), and one click turns them into a runnable Playwright script or an
 Excel test suite.
