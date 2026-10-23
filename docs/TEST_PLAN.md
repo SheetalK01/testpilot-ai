@@ -169,11 +169,11 @@ Parameterised boundary tests are grouped into one row; the count is in brackets.
 | API-18 | API · test cases, generation, export and dashboard: validation (9 boundary/negative cases) | API | Negative / boundary | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-19 | API · test cases, generation, export and dashboard › boundaries that are allowed: 30 steps of 500 characters, 255-character title | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-20 | API · test cases, generation, export and dashboard › POST /generate returns six mock AI cases; regenerating keeps MANUAL cases | API | Functional | P1 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
-| API-25 | API · test cases, generation, export and dashboard › parallel generations (different stories and the same story) all succeed — MySQL deadlock regression | API | Functional | P1 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
-| API-21 | API · test cases, generation, export and dashboard › POST /playwright → 400 without cases, then 200 with a script | API | Negative | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
-| API-22 | API · test cases, generation, export and dashboard › POST /playwright rejects a non-http base URL | API | Negative | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
-| API-23 | API · test cases, generation, export and dashboard › GET /export returns an .xlsx attachment | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
-| API-24 | API · test cases, generation, export and dashboard › GET /dashboard has every key and counts my data | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
+| API-21 | API · test cases, generation, export and dashboard › parallel generations (different stories and the same story) all succeed — MySQL deadlock regression | API | Functional | P1 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
+| API-22 | API · test cases, generation, export and dashboard › POST /playwright → 400 without cases, then 200 with a script | API | Negative | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
+| API-23 | API · test cases, generation, export and dashboard › POST /playwright rejects a non-http base URL | API | Negative | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
+| API-24 | API · test cases, generation, export and dashboard › GET /export returns an .xlsx attachment | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
+| API-25 | API · test cases, generation, export and dashboard › GET /dashboard has every key and counts my data | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | A11Y-01 | axe WCAG 2.1 AA: landing page (light + dark) | Accessibility | Accessibility | P1 | ✅ | `e2e/tests/a11y/accessibility.spec.js` |
 | A11Y-02 | axe WCAG 2.1 AA: login page, including validation errors (light + dark) | Accessibility | Accessibility | P1 | ✅ | `e2e/tests/a11y/accessibility.spec.js` |
 | A11Y-03 | axe WCAG 2.1 AA: register page (light + dark) | Accessibility | Accessibility | P1 | ✅ | `e2e/tests/a11y/accessibility.spec.js` |
