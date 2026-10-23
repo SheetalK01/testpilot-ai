@@ -1,4 +1,5 @@
 import { expect, test } from '../../fixtures/index.js';
+import { FRONTEND_URL } from '../../playwright.config.js';
 import { JWT_SECRET, signJwt } from '../../helpers/api.js';
 import { expectErrorShape } from '../../helpers/assertions.js';
 import { LOGIN_STORY, manualCase, newUser } from '../../helpers/data.js';
@@ -190,8 +191,9 @@ test.describe('Security', { tag: ['@security', '@api', '@regression'] }, () => {
         headers: { Origin: origin, 'Access-Control-Request-Method': 'GET' },
       });
 
-    const allowed = await preflight('http://localhost:5173');
-    expect(allowed.headers()['access-control-allow-origin']).toBe('http://localhost:5173');
+    const frontendOrigin = new URL(FRONTEND_URL).origin;
+    const allowed = await preflight(frontendOrigin);
+    expect(allowed.headers()['access-control-allow-origin']).toBe(frontendOrigin);
 
     const blocked = await preflight('https://evil.example.com');
     expect(blocked.status()).toBe(403);
