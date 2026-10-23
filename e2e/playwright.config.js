@@ -63,31 +63,34 @@ export default defineConfig({
       },
     },
   ],
-  webServer: [
-    {
-      name: 'ai-engine',
-      command: `${python} -m uvicorn app.main:app --port 8000`,
-      cwd: '../ai_engine',
-      url: `${AI_ENGINE_URL}/health`,
-      env: { AI_MODE: 'mock', MOCK_DELAY_SECONDS: '0.8' },
-      reuseExistingServer: !CI,
-      timeout: 60_000,
-    },
-    {
-      name: 'backend',
-      command: backendCommand,
-      url: `${API_URL}/actuator/health`,
-      env: { AI_ENGINE_URL },
-      reuseExistingServer: !CI,
-      timeout: 180_000,
-    },
-    {
-      name: 'frontend',
-      command: 'npm run dev -- --port 5173 --strictPort',
-      cwd: '../frontend',
-      url: FRONTEND_URL,
-      reuseExistingServer: !CI,
-      timeout: 60_000,
-    },
-  ],
+  // When E2E_BASE_URL points at an already running stack (e.g. docker compose), start nothing.
+  webServer: process.env.E2E_BASE_URL
+    ? undefined
+    : [
+        {
+          name: 'ai-engine',
+          command: `${python} -m uvicorn app.main:app --port 8000`,
+          cwd: '../ai_engine',
+          url: `${AI_ENGINE_URL}/health`,
+          env: { AI_MODE: 'mock', MOCK_DELAY_SECONDS: '0.8' },
+          reuseExistingServer: !CI,
+          timeout: 60_000,
+        },
+        {
+          name: 'backend',
+          command: backendCommand,
+          url: `${API_URL}/actuator/health`,
+          env: { AI_ENGINE_URL },
+          reuseExistingServer: !CI,
+          timeout: 180_000,
+        },
+        {
+          name: 'frontend',
+          command: 'npm run dev -- --port 5173 --strictPort',
+          cwd: '../frontend',
+          url: FRONTEND_URL,
+          reuseExistingServer: !CI,
+          timeout: 60_000,
+        },
+      ],
 });
