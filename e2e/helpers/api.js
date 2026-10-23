@@ -84,6 +84,3 @@ export function signJwt(claims, secret) {
   const signature = createHmac('sha256', secret).update(unsigned).digest('base64url');
   return `${unsigned}.${signature}`;
 }
-
-/** Must match the backend's JWT_SECRET (the dev default unless overridden). */
-export const JWT_SECRET = process.env.JWT_SECRET ?? 'dev-only-secret-change-me-0123456789abcdef';
