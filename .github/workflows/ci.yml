@@ -212,6 +212,7 @@ jobs:
           JWT_SECRET: compose-dev-secret-change-me-0123456789
         run: |
           npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium  # the XSS test renders pages
           npx playwright test --project=api
       - uses: grafana/setup-k6-action@v1
       - name: k6 smoke (10 VUs x 30 s, p95 < 500 ms, errors < 1%)
