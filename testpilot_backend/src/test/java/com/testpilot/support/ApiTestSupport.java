@@ -3,6 +3,7 @@ package com.testpilot.support;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.testpilot.aiengine.AiEngineClient;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import tools.jackson.databind.JsonNode;
@@ -18,7 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * Base class for API integration tests: full Spring context, H2 in MySQL mode, Flyway schema, real
  * security filter chain. Every test registers its own uniquely named user, so tests are independent
- * and need no cleanup.
+ * and need no cleanup. The AI engine client is a Mockito bean, so no Python service is needed.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,6 +31,9 @@ public abstract class ApiTestSupport {
 
     @Autowired
     protected ObjectMapper json;
+
+    @MockitoBean
+    protected AiEngineClient aiEngine;
 
     protected static String uniqueEmail() {
         return "user-" + UUID.randomUUID() + "@example.com";
