@@ -43,12 +43,12 @@ user's data**, failures of the AI provider are handled gracefully, and the UI is
                  ┌──────────────┐
                  │  E2E UI (27) │  Playwright, Page Object Model, real browser
                ┌─┴──────────────┴─┐
-               │ API + security   │  Playwright request context against the running backend (72)
+               │ API + security   │  Playwright request context against the running backend (73)
                │ a11y (14) visual │
              ┌─┴──────────────────┴─┐
              │ Integration (MockMvc)│  Spring context + H2 + real security chain (47)
            ┌─┴──────────────────────┴─┐
-           │ Unit (JUnit, pytest)      │  services, JWT, AI client, prompts, scorers (43 + 51)
+           │ Unit (JUnit, pytest)      │  services, JWT, AI client, prompts, scorers (45 + 51)
            └───────────────────────────┘
 ```
 
@@ -70,7 +70,7 @@ user's data**, failures of the AI provider are handled gracefully, and the UI is
 |---|---|---|
 | Local | `scripts/dev-local.sh`, or `npx playwright test` (its `webServer` starts everything) | H2 in-memory, AI mock |
 | CI | GitHub Actions: each job starts the services it needs | H2 in-memory, AI mock |
-| Docker | `docker compose up` (Nginx + Spring Boot + FastAPI + MySQL 8.4) | MySQL volume, AI mock or live |
+| Docker | `docker compose up` (Nginx + Spring Boot + FastAPI + MySQL 8.4); CI runs the API/security suite and k6 here | MySQL volume, AI mock or live |
 | AI evaluation | `AI_MODE=live python -m eval.run_eval` | Real Claude calls, 5 reference stories |
 
 Browser: Chromium (Desktop Chrome profile, 1280×720; visual tests 1280×800).
@@ -99,12 +99,13 @@ endpoints respond.
 | XSS via stored story text | Session theft | React escaping, no `dangerouslySetInnerHTML` (ESLint `react/no-danger`), test injects `<img onerror>` and `<script>` and checks nothing runs |
 | Accessibility regressions | Excludes users | axe on every page in both themes, focus-trap test for dialogs |
 | UI drift | Unnoticed layout breakage | Visual snapshots with masked dynamic values |
+| H2 hides MySQL-specific behaviour (locking, types) | Production-only bugs | API/security suite also runs against the MySQL stack in CI; this caught an InnoDB gap-lock deadlock under concurrent generations |
 | Visual snapshots differ per OS | False failures | Baselines stored per platform (`__snapshots__/{platform}`) |
 
 ## 7. Test cases (automated E2E, API, security, accessibility and visual)
 
 Parameterised boundary tests are grouped into one row; the count is in brackets. Run
-`npx playwright test --list` for the full list of 117 individual tests.
+`npx playwright test --list` for the full list of 118 individual tests.
 
 | ID | Test case | Suite | Type | Priority | Automated | Spec file |
 |---|---|---|---|---|---|---|
@@ -168,6 +169,7 @@ Parameterised boundary tests are grouped into one row; the count is in brackets.
 | API-18 | API · test cases, generation, export and dashboard: validation (9 boundary/negative cases) | API | Negative / boundary | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-19 | API · test cases, generation, export and dashboard › boundaries that are allowed: 30 steps of 500 characters, 255-character title | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-20 | API · test cases, generation, export and dashboard › POST /generate returns six mock AI cases; regenerating keeps MANUAL cases | API | Functional | P1 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
+| API-25 | API · test cases, generation, export and dashboard › parallel generations (different stories and the same story) all succeed — MySQL deadlock regression | API | Functional | P1 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-21 | API · test cases, generation, export and dashboard › POST /playwright → 400 without cases, then 200 with a script | API | Negative | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-22 | API · test cases, generation, export and dashboard › POST /playwright rejects a non-http base URL | API | Negative | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
 | API-23 | API · test cases, generation, export and dashboard › GET /export returns an .xlsx attachment | API | Functional | P2 | ✅ | `e2e/tests/api/test-cases.api.spec.js` |
@@ -189,7 +191,7 @@ Parameterised boundary tests are grouped into one row; the count is in brackets.
 | Suite | Tool | Count | Highlights |
 |---|---|---|---|
 | Backend API integration | JUnit 5 + MockMvc + H2 | 47 | Auth, CRUD, IDOR, cascades, ordering, validation, generation success/failure, Playwright, Excel read-back, dashboard |
-| Backend unit | JUnit 5 + Mockito | 43 | Services, `JwtService` (expiry, wrong key), AI client over a real local HTTP server (timeouts, error bodies, contract violations) |
+| Backend unit | JUnit 5 + Mockito | 45 | Services, `JwtService` (expiry, wrong key), AI client over a real local HTTP server (timeouts, error bodies, contract violations) |
 | AI engine | pytest | 51 | Health/mode, mock shape, 422 validation, prompt builder, live path with mocked Anthropic client (valid, refusal, cut-off, invalid JSON, timeout, rate limit, 5xx), fence stripper, eval scorers |
 | Performance | k6 | 1 scenario | 10 VUs × 30 s, p95 < 500 ms, errors < 1 % |
 
