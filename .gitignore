@@ -1,0 +1,25 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Java
+target/
+
+# Node
+node_modules/
+dist/
+playwright-report/
+test-results/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
