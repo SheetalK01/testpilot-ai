@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="TestPilot AI">
+  <defs>
+    <linearGradient id="tp-g" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#tp-g)"/>
+  <path d="M14 31.5 50 15 39.5 50.5 30.5 37.5Z" fill="#fff" fill-opacity=".95"/>
+  <path d="M30.5 37.5 50 15 26 34" fill="#C7D2FE"/>
+  <circle cx="45" cy="45" r="10" fill="#10B981" stroke="#fff" stroke-width="3"/>
+  <path d="m40.5 45 3 3 5.5-6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
