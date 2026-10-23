@@ -61,6 +61,17 @@ public class StoryService {
         return stories.findOwned(storyId, userId).orElseThrow(StoryService::notFound);
     }
 
+    /**
+     * Locks the story row, then checks ownership. Used before replacing AI test cases so that two
+     * generations of the same story run one after the other. The lock is taken first on purpose: in
+     * MySQL (REPEATABLE READ) the transaction's snapshot then starts after the wait, so it sees the
+     * cases a concurrent generation has just committed. Must be called inside a transaction.
+     */
+    public UserStory lockForUpdate(Long userId, Long storyId) {
+        stories.lockById(storyId);
+        return requireOwned(userId, storyId);
+    }
+
     private static NotFoundException notFound() {
         return new NotFoundException("Story");
     }

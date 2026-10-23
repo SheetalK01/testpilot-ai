@@ -184,12 +184,17 @@ jobs:
           retention-days: 7
 
   perf:
-    name: Performance smoke (k6 on docker compose)
+    name: Docker stack (API suite on MySQL + k6 smoke)
     needs: e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
       - name: Start the stack (MySQL, AI engine, backend, Nginx frontend)
         run: docker compose up -d --build --wait --wait-timeout 300
       - name: Smoke-check the Nginx frontend and API proxy
@@ -197,6 +202,16 @@ jobs:
           curl -fsS http://localhost:3000/ > /dev/null
           curl -fsSI http://localhost:3000/ | grep -i "content-security-policy"
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/api/auth/me)" = "401"
+      - name: API and security suites against MySQL behind Nginx
+        working-directory: e2e
+        env:
+          E2E_BASE_URL: http://localhost:3000
+          E2E_API_URL: http://localhost:8080
+          # docker-compose.yml's default JWT secret (no .env in CI)
+          JWT_SECRET: compose-dev-secret-change-me-0123456789
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright test --project=api
       - uses: grafana/setup-k6-action@v1
       - name: k6 smoke (10 VUs x 30 s, p95 < 500 ms, errors < 1%)
         run: k6 run perf/smoke.js

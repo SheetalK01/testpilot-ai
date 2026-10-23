@@ -65,6 +65,15 @@ class TestCaseServiceTest {
     }
 
     @Test
+    void replaceAiCasesSkipsTheDeleteWhenThereAreNoAiCases() {
+        when(testCases.findIdsByStoryIdAndSource(9L, Source.AI)).thenReturn(List.of());
+
+        service.replaceAiCases(story, List.of(request("First AI").toContent()));
+
+        verify(testCases, never()).deleteAllByIdInBatch(any());
+    }
+
+    @Test
     void notOwnedTestCaseIsNotFound() {
         when(testCases.findOwned(4L, 2L)).thenReturn(Optional.empty());
 
@@ -82,13 +91,15 @@ class TestCaseServiceTest {
     }
 
     @Test
-    void replaceAiCasesDeletesOnlyAiCasesBeforeSavingTheNewOnes() {
+    void replaceAiCasesDeletesOnlyAiCasesByIdBeforeSavingTheNewOnes() {
+        when(testCases.findIdsByStoryIdAndSource(9L, Source.AI)).thenReturn(List.of(4L, 5L));
         when(testCases.saveAllAndFlush(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         List<TestCase> saved = service.replaceAiCases(story, List.of(request("New AI").toContent()));
 
         InOrder order = inOrder(testCases);
-        order.verify(testCases).deleteByStoryIdAndSource(9L, Source.AI);
+        order.verify(testCases).findIdsByStoryIdAndSource(9L, Source.AI);
+        order.verify(testCases).deleteAllByIdInBatch(List.of(4L, 5L));
         order.verify(testCases).saveAllAndFlush(anyList());
         assertThat(saved).singleElement().satisfies(tc -> assertThat(tc.getSource()).isEqualTo(Source.AI));
     }

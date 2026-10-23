@@ -3,7 +3,9 @@ package com.testpilot.story;
 import com.testpilot.story.dto.StoryResponse;
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,4 +29,9 @@ public interface UserStoryRepository extends JpaRepository<UserStory, Long> {
     Optional<UserStory> findOwned(@Param("id") Long id, @Param("ownerId") Long ownerId);
 
     long countByProjectOwnerId(Long ownerId);
+
+    /** SELECT ... FOR UPDATE on the story row only (primary key lookup, so no gap locks). */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s.id from UserStory s where s.id = :id")
+    Optional<Long> lockById(@Param("id") Long id);
 }

@@ -101,6 +101,30 @@ test.describe(
       },
     );
 
+    test('parallel generations (different stories and the same story) all succeed', async ({
+      userApi,
+    }) => {
+      // Regression test: on MySQL, concurrent replace-AI-cases transactions used to deadlock on gap locks.
+      const project = await userApi.createProject({ name: 'Parallel' });
+      const stories = await Promise.all(
+        [1, 2, 3, 4, 5].map((n) =>
+          userApi.createStory(project.id, { ...LOGIN_STORY, title: `Story ${n}` }),
+        ),
+      );
+      const targets = [...stories.map((story) => story.id), stories[0].id, stories[0].id];
+
+      const responses = await Promise.all(
+        targets.map((id) => userApi.post(`/stories/${id}/generate`)),
+      );
+
+      expect(responses.map((response) => response.status())).toEqual(targets.map(() => 200));
+      const cases = await userApi.expectJson(
+        userApi.get(`/stories/${stories[0].id}/test-cases`),
+        200,
+      );
+      expect(cases).toHaveLength(MOCK_CASES.total); // three generations of one story never duplicate cases
+    });
+
     test('POST /playwright → 400 without cases, then 200 with a script', async ({ userApi }) => {
       const empty = await userApi.post(`/stories/${storyId}/playwright`, {});
       expect(empty.status()).toBe(400);

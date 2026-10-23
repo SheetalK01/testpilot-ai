@@ -48,9 +48,16 @@ public class TestCaseService {
     /**
      * Replaces a story's AI-generated cases with a fresh set; MANUAL cases are never touched.
      * Runs inside the caller's transaction so the delete and inserts commit (or roll back) together.
+     *
+     * <p>Old cases are deleted by primary key rather than with {@code DELETE ... WHERE story_id = ?}:
+     * on MySQL/InnoDB a range delete on the secondary index takes gap locks, and concurrent
+     * generations for neighbouring stories then deadlock on their inserts.
      */
     public List<TestCase> replaceAiCases(UserStory story, List<TestCaseContent> generated) {
-        testCases.deleteByStoryIdAndSource(story.getId(), Source.AI);
+        List<Long> oldIds = testCases.findIdsByStoryIdAndSource(story.getId(), Source.AI);
+        if (!oldIds.isEmpty()) {
+            testCases.deleteAllByIdInBatch(oldIds);
+        }
         return testCases.saveAllAndFlush(
                 generated.stream().map(content -> new TestCase(story, Source.AI, content)).toList());
     }

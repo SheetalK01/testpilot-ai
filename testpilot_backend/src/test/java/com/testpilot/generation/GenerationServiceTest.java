@@ -54,6 +54,7 @@ class GenerationServiceTest {
         story = new UserStory(null, "Login", "As a user", "AC");
         ReflectionTestUtils.setField(story, "id", 9L);
         when(storyService.requireOwned(1L, 9L)).thenReturn(story);
+        when(storyService.lockForUpdate(1L, 9L)).thenReturn(story);
         when(runs.save(any())).thenAnswer(inv -> {
             run = inv.getArgument(0);
             ReflectionTestUtils.setField(run, "id", 77L);
