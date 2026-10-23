@@ -73,6 +73,11 @@ test cases, **export them to Excel**, and **generate a Playwright test script** 
 | E2E / API tests | Playwright (JavaScript, Chromium only) |
 | CI | GitHub Actions |
 | Containers | Docker, docker-compose, Nginx (serves the built frontend and proxies `/api` to the backend) |
+| DB migrations | **Flyway** (versioned SQL in `src/main/resources/db/migration`, `ddl-auto: validate`) |
+| API docs | **springdoc-openapi** → Swagger UI at `/swagger-ui.html`, spec at `/v3/api-docs` |
+| Code quality | JaCoCo coverage (backend, ≥80% line coverage on services), ESLint + Prettier (frontend, e2e), Ruff (AI engine) |
+| UI extras | Recharts (charts), lucide-react (icons), Prism (`prism-react-renderer`) for code highlighting, Inter font |
+| QA extras | `@axe-core/playwright` (accessibility), k6 (performance smoke), Playwright visual snapshots |
 
 Use exact versions in `pom.xml`, `requirements.txt`, and `package.json` (no `^latest`). Commit lock files.
 
@@ -140,8 +145,10 @@ testpilot-ai/
 
 ## 5. Database schema
 
-JPA entities generate the schema (`ddl-auto: update` is fine for this project). Table and column
-names below are what must exist.
+The schema is created by **Flyway migrations** (`V1__init.sql`, later `V2__...` if needed) and JPA
+runs with `ddl-auto: validate`, so the database is versioned like in a real product. Migrations must
+work on both MySQL 8 and H2 (MySQL mode). Add indexes on every foreign key and on `users.email`.
+Table and column names below are what must exist.
 
 ### `users`
 | Column | Type | Rules |
