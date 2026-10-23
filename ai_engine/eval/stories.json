@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Login",
+    "description": "As a registered user I want to log in with my email and password so that I can access my dashboard.",
+    "acceptanceCriteria": "Valid email and password take the user to the dashboard\nWrong password shows the error 'Invalid email or password'\nEmail and password are required\nThe account is locked for 15 minutes after 5 failed attempts\nThe password field masks the input"
+  },
+  {
+    "title": "Sign up",
+    "description": "As a new visitor I want to create an account so that I can save my work.",
+    "acceptanceCriteria": "Name, email and password are required\nEmail must be unique; a duplicate email shows an error\nPassword needs at least 8 characters with one letter and one digit\nAfter sign up the user is logged in and sees the dashboard\nTerms of service must be accepted before submitting"
+  },
+  {
+    "title": "Password reset",
+    "description": "As a user who forgot my password I want to reset it by email so that I can regain access.",
+    "acceptanceCriteria": "Entering a registered email sends a reset link\nAn unknown email shows the same confirmation message to avoid revealing accounts\nThe reset link expires after 30 minutes\nThe reset link can be used only once\nThe new password must meet the password policy"
+  },
+  {
+    "title": "Cart checkout",
+    "description": "As a shopper I want to check out the items in my cart so that I can buy them.",
+    "acceptanceCriteria": "Checkout shows the item list, quantities and order total including tax\nShipping address is required\nCard payment is validated before the order is placed\nA declined card shows an error and the cart is kept\nAn empty cart cannot be checked out\nA successful order shows a confirmation with an order number"
+  },
+  {
+    "title": "File upload",
+    "description": "As a user I want to upload a profile document so that it is attached to my account.",
+    "acceptanceCriteria": "Only PDF, PNG and JPG files are accepted\nFiles larger than 5 MB are rejected with an error message\nA progress bar shows upload progress\nThe uploaded file appears in the documents list with its name and size\nThe user can cancel an upload in progress"
+  }
+]
