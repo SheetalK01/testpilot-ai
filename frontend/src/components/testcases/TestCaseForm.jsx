@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ApiError } from '../../services/api';
+import { focusFirstInvalid } from '../forms/useForm';
 import Banner from '../ui/Banner';
 import Button from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/Field';
@@ -44,9 +45,13 @@ export default function TestCaseForm({ testCase, onSubmit, onCancel }) {
 
   const submit = async (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
     const found = validateTestCase(values);
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) {
+      focusFirstInvalid(form);
+      return;
+    }
     setSaving(true);
     setFormError(null);
     try {
@@ -60,6 +65,7 @@ export default function TestCaseForm({ testCase, onSubmit, onCancel }) {
       });
     } catch (error) {
       setErrors(fieldErrorsFrom(error));
+      focusFirstInvalid(form);
       setFormError(error.message);
       setSaving(false);
     }

@@ -1,5 +1,5 @@
 import { LogIn } from 'lucide-react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
 import PasswordInput from '../components/auth/PasswordInput';
 import { emailError } from '../components/auth/validation';
@@ -18,19 +18,16 @@ const validate = ({ email, password }) => ({
 export default function LoginPage() {
   useDocumentTitle('Log in');
   const { user, login } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const { field, handleSubmit, submitting, formError } = useForm(
     { email: '', password: '' },
     validate,
   );
 
-  if (user) return <Navigate to="/" replace />;
+  // Once logged in (including right after submitting), continue to the page that asked for login.
+  if (user) return <Navigate to={location.state?.from ?? '/'} replace />;
 
-  const onSubmit = handleSubmit(async ({ email, password }) => {
-    await login({ email: email.trim(), password });
-    navigate(location.state?.from ?? '/', { replace: true });
-  });
+  const onSubmit = handleSubmit(({ email, password }) => login({ email: email.trim(), password }));
 
   return (
     <AuthLayout

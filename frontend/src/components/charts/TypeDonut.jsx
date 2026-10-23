@@ -18,6 +18,7 @@ export default function TypeDonut({ byType }) {
         <PieChart accessibilityLayer={false}>
           {total === 0 ? (
             <Pie
+              rootTabIndex={-1}
               data={[{ value: 1 }]}
               dataKey="value"
               innerRadius="68%"
@@ -28,6 +29,7 @@ export default function TypeDonut({ byType }) {
             />
           ) : (
             <Pie
+              rootTabIndex={-1}
               data={data}
               dataKey="value"
               nameKey="name"
