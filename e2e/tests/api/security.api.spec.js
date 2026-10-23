@@ -1,6 +1,6 @@
 import { expect, test } from '../../fixtures/index.js';
-import { FRONTEND_URL } from '../../playwright.config.js';
-import { JWT_SECRET, signJwt } from '../../helpers/api.js';
+import { FRONTEND_URL, JWT_SECRET } from '../../playwright.config.js';
+import { signJwt } from '../../helpers/api.js';
 import { expectErrorShape } from '../../helpers/assertions.js';
 import { LOGIN_STORY, manualCase, newUser } from '../../helpers/data.js';
 
@@ -114,7 +114,19 @@ test.describe('Security', { tag: ['@security', '@api', '@regression'] }, () => {
     });
 
     test('an expired token → 401', async ({ api, user }) => {
-      const past = Math.floor(Date.now() / 1000) - 7200;
+      // Precondition: a fresh token signed the same way is accepted, so the 401 below is caused by
+      // the expiry alone (and not by a JWT_SECRET mismatch between this suite and the backend).
+      const now = Math.floor(Date.now() / 1000);
+      const valid = signJwt(
+        { sub: String(user.id), iss: 'testpilot-ai', iat: now, exp: now + 600 },
+        JWT_SECRET,
+      );
+      expect(
+        (await api.withToken(valid).get('/auth/me')).status(),
+        'set JWT_SECRET to the backend secret',
+      ).toBe(200);
+
+      const past = now - 7200;
       const token = signJwt(
         { sub: String(user.id), iss: 'testpilot-ai', iat: past - 60, exp: past },
         JWT_SECRET,

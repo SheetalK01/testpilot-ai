@@ -2,8 +2,10 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+// Keep the browser's Host header (like Nginx does in Docker): the backend then sees proxied calls as
+// same-origin, so local development does not depend on the CORS allow-list.
 const apiProxy = {
-  '/api': { target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8080', changeOrigin: true },
+  '/api': { target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8080', changeOrigin: false },
 };
 
 export default defineConfig({

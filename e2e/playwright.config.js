@@ -1,11 +1,26 @@
 // @ts-check
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
 const CI = Boolean(process.env.CI);
 export const FRONTEND_URL = process.env.E2E_BASE_URL ?? 'http://localhost:5173';
 export const API_URL = process.env.E2E_API_URL ?? 'http://localhost:8080';
 const AI_ENGINE_URL = 'http://localhost:8000';
+
+/** Reads one variable from the repo-root .env (shared with docker-compose and dev-local.sh). */
+function fromDotEnv(name) {
+  if (!existsSync('../.env')) return undefined;
+  const line = readFileSync('../.env', 'utf8')
+    .split('\n')
+    .find((l) => l.startsWith(`${name}=`));
+  return line?.slice(name.length + 1).trim() || undefined;
+}
+
+/** The backend's JWT secret, needed to forge tokens in the security tests (e.g. an expired one). */
+export const JWT_SECRET =
+  process.env.JWT_SECRET ??
+  fromDotEnv('JWT_SECRET') ??
+  'dev-only-secret-change-me-0123456789abcdef';
 
 const backendJar = '../testpilot_backend/target/testpilot-backend.jar';
 const backendCommand = existsSync(backendJar)
@@ -80,7 +95,7 @@ export default defineConfig({
           name: 'backend',
           command: backendCommand,
           url: `${API_URL}/actuator/health`,
-          env: { AI_ENGINE_URL },
+          env: { AI_ENGINE_URL, JWT_SECRET },
           reuseExistingServer: !CI,
           timeout: 180_000,
         },
