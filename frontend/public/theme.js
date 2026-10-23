@@ -5,7 +5,7 @@
     var saved = localStorage.getItem('tp_theme');
     var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.classList.toggle('dark', dark);
-  } catch (e) {
+  } catch {
     // Storage unavailable: fall back to the light theme.
   }
 })();
