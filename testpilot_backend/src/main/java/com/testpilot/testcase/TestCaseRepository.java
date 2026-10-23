@@ -3,7 +3,6 @@ package com.testpilot.testcase;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,9 +22,8 @@ public interface TestCaseRepository extends JpaRepository<TestCase, Long> {
     @Query("select tc from TestCase tc where tc.id = :id and tc.story.project.owner.id = :ownerId")
     Optional<TestCase> findOwned(@Param("id") Long id, @Param("ownerId") Long ownerId);
 
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("delete from TestCase tc where tc.story.id = :storyId and tc.source = :source")
-    int deleteByStoryIdAndSource(@Param("storyId") Long storyId, @Param("source") Source source);
+    @Query("select tc.id from TestCase tc where tc.story.id = :storyId and tc.source = :source")
+    List<Long> findIdsByStoryIdAndSource(@Param("storyId") Long storyId, @Param("source") Source source);
 
     long countByStoryId(Long storyId);
 

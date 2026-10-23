@@ -73,7 +73,7 @@ public class GenerationService {
 
         try {
             tx.executeWithoutResult(status -> {
-                UserStory story = storyService.requireOwned(userId, storyId);
+                UserStory story = storyService.lockForUpdate(userId, storyId);
                 List<TestCase> saved = testCaseService.replaceAiCases(
                         story, response.testCases().stream().map(AiTestCase::toContent).toList());
                 runs.findById(started.runId()).ifPresent(run -> run.succeed(response.model(), saved.size(), durationMs));

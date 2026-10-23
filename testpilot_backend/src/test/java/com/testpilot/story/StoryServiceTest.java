@@ -82,6 +82,18 @@ class StoryServiceTest {
     }
 
     @Test
+    void lockForUpdateLocksTheRowBeforeCheckingOwnership() {
+        UserStory story = new UserStory(null, "Login", "desc", null);
+        when(stories.findOwned(9L, 1L)).thenReturn(Optional.of(story));
+
+        assertThat(service.lockForUpdate(1L, 9L)).isSameAs(story);
+
+        var order = org.mockito.Mockito.inOrder(stories);
+        order.verify(stories).lockById(9L);
+        order.verify(stories).findOwned(9L, 1L);
+    }
+
+    @Test
     void notOwnedStoryIsNotFound() {
         when(stories.findOwned(9L, 2L)).thenReturn(Optional.empty());
         when(stories.findSummary(9L, 2L)).thenReturn(Optional.empty());
