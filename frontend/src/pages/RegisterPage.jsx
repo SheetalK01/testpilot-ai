@@ -1,5 +1,5 @@
 import { UserPlus } from 'lucide-react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
 import PasswordInput from '../components/auth/PasswordInput';
 import { emailError, newPasswordError } from '../components/auth/validation';
@@ -24,7 +24,6 @@ const validate = ({ name, email, password }) => ({
 export default function RegisterPage() {
   useDocumentTitle('Create account');
   const { user, register } = useAuth();
-  const navigate = useNavigate();
   const { field, handleSubmit, submitting, formError } = useForm(
     { name: '', email: '', password: '' },
     validate,
@@ -32,10 +31,9 @@ export default function RegisterPage() {
 
   if (user) return <Navigate to="/" replace />;
 
-  const onSubmit = handleSubmit(async ({ name, email, password }) => {
-    await register({ name: name.trim(), email: email.trim(), password });
-    navigate('/', { replace: true });
-  });
+  const onSubmit = handleSubmit(({ name, email, password }) =>
+    register({ name: name.trim(), email: email.trim(), password }),
+  );
 
   return (
     <AuthLayout
