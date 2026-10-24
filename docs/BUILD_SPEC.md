@@ -173,7 +173,7 @@ testpilot-ai/
 ├── docs/             PLAN.md, BUILD_SPEC.md, API.md, TEST_PLAN.md, INTERVIEW_NOTES.md, screenshots/
 ├── scripts/          dev-local.sh, capture-screenshots.js
 ├── .github/workflows/ci.yml
-├── docker-compose.yml, .env.example, LICENSE (MIT, Sheetal Khadanga), README.md
+├── docker-compose.yml, .env.example, LICENSE (All rights reserved, Sheetal Khadanga), README.md
 ```
 
 ---

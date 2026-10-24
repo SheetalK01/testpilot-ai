@@ -12,7 +12,7 @@ cases — then turns them into a ready-to-run Playwright script or a formatted E
 [![CI](https://github.com/SheetalK01/testpilot-ai/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SheetalK01/testpilot-ai/actions/workflows/ci.yml)
 ![Service coverage](https://img.shields.io/badge/service%20coverage-99%25-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-261%20automated-brightgreen)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: All rights reserved](https://img.shields.io/badge/license-all%20rights%20reserved-red.svg)](LICENSE)
 <br />
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-6DB33F?logo=springboot&logoColor=white)
@@ -282,4 +282,4 @@ secret store, and expose only the frontend (Nginx) publicly.
 
 [LinkedIn](https://www.linkedin.com/in/sheetal-khadanga) · [GitHub](https://github.com/SheetalK01)
 
-Licensed under the [MIT License](LICENSE).
+© 2026 Sheetal Khadanga. **All rights reserved.** This code is shared for portfolio and evaluation purposes only; see [LICENSE](LICENSE).
