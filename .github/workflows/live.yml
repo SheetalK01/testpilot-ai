@@ -26,7 +26,10 @@ concurrency:
 jobs:
   live:
     name: Live demo (@live)
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    # Skipped until the demo is deployed and the LIVE_* repository variables are set.
+    if: >-
+      vars.LIVE_BASE_URL != '' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
