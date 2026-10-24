@@ -19,6 +19,7 @@
 		<springdoc.version>3.1.1</springdoc.version>
 		<poi.version>5.5.1</poi.version>
 		<jacoco.version>0.8.15</jacoco.version>
+		<sentry.version>8.61.1</sentry.version>
 		<!-- Coverage gate applies to the service layer (spec: >= 80% line coverage on services). -->
 		<jacoco.service.minimum>0.80</jacoco.service.minimum>
 	</properties>
@@ -65,6 +66,12 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>${poi.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.sentry</groupId>
+			<artifactId>sentry-spring-boot-4-starter</artifactId>
+			<version>${sentry.version}</version>
 		</dependency>
 
 		<dependency>

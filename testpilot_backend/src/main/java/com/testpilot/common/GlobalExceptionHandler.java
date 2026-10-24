@@ -91,6 +91,11 @@ public class GlobalExceptionHandler {
         return respond(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Content type must be application/json", null, request);
     }
 
+    @ExceptionHandler(TooManyRequestsException.class)
+    ResponseEntity<ApiError> tooManyRequests(TooManyRequestsException ex, HttpServletRequest request) {
+        return respond(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), null, request);
+    }
+
     @ExceptionHandler(ConflictException.class)
     ResponseEntity<ApiError> conflict(ConflictException ex, HttpServletRequest request) {
         return respond(HttpStatus.CONFLICT, ex.getMessage(), null, request);

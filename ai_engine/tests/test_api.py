@@ -95,3 +95,16 @@ def test_openapi_docs_are_served(client: TestClient) -> None:
     assert client.get("/docs").status_code == 200
     paths = client.get("/openapi.json").json()["paths"]
     assert {"/health", "/v1/test-cases/generate", "/v1/playwright/generate"} <= set(paths)
+
+
+def test_generation_requires_the_internal_token_when_configured() -> None:
+    settings = mock_settings(ai_engine_token="s3cret")
+    with TestClient(create_app(settings, MockLlmClient(0))) as api:
+        assert api.get("/health").status_code == 200  # health stays public for platform checks
+        missing = api.post("/v1/test-cases/generate", json=STORY)
+        wrong = api.post("/v1/test-cases/generate", json=STORY, headers={"X-Internal-Token": "nope"})
+        right = api.post("/v1/test-cases/generate", json=STORY, headers={"X-Internal-Token": "s3cret"})
+    assert missing.status_code == 401
+    assert missing.json() == {"detail": "Missing or invalid internal token"}
+    assert wrong.status_code == 401
+    assert right.status_code == 200

@@ -6,6 +6,7 @@ calls it; the Anthropic API key lives only in this service's environment.
 
 import logging
 import re
+import secrets
 import time
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -30,6 +31,7 @@ from app.schemas import (
 logger = logging.getLogger("app")
 
 REQUEST_ID_HEADER = "X-Request-Id"
+TOKEN_HEADER = "X-Internal-Token"  # noqa: S105 - a header name, not a secret
 _SAFE_REQUEST_ID = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
@@ -68,7 +70,10 @@ def create_app(settings: Settings | None = None, llm: LlmClient | None = None) -
         token = request_id_var.set(request_id)
         started = time.perf_counter()
         try:
-            response = await call_next(request)
+            if not _authorized(request):
+                response = JSONResponse(status_code=401, content={"detail": "Missing or invalid internal token"})
+            else:
+                response = await call_next(request)
             response.headers[REQUEST_ID_HEADER] = request_id
             logger.info(
                 "request",
@@ -82,6 +87,12 @@ def create_app(settings: Settings | None = None, llm: LlmClient | None = None) -
             return response
         finally:
             request_id_var.reset(token)
+
+    def _authorized(request: Request) -> bool:
+        # Health and docs stay public so the platform's health checks and the wake-up ping work.
+        if not settings.ai_engine_token or not request.url.path.startswith("/v1/"):
+            return True
+        return secrets.compare_digest(request.headers.get(TOKEN_HEADER, ""), settings.ai_engine_token)
 
     @app.exception_handler(LlmError)
     async def llm_error_handler(_: Request, exc: LlmError) -> JSONResponse:

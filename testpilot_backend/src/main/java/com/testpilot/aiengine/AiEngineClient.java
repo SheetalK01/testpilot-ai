@@ -14,9 +14,12 @@ import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
@@ -31,7 +34,11 @@ import org.springframework.web.client.RestClientResponseException;
 @Component
 public class AiEngineClient {
 
+    /** Shared-secret header: the AI engine is publicly reachable on free hosting, so it only serves callers that know it. */
+    public static final String TOKEN_HEADER = "X-Internal-Token";
+
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Logger log = LoggerFactory.getLogger(AiEngineClient.class);
 
     private final RestClient restClient;
     private final Duration readTimeout;
@@ -39,17 +46,29 @@ public class AiEngineClient {
 
     @Autowired
     public AiEngineClient(TestpilotProperties properties, Validator validator) {
-        this(properties.aiEngine().url(), Duration.ofSeconds(properties.aiEngine().timeoutSeconds()), validator);
+        this(
+                properties.aiEngine().url(),
+                Duration.ofSeconds(properties.aiEngine().timeoutSeconds()),
+                validator,
+                properties.aiEngine().token());
     }
 
     AiEngineClient(String baseUrl, Duration readTimeout, Validator validator) {
+        this(baseUrl, readTimeout, validator, null);
+    }
+
+    AiEngineClient(String baseUrl, Duration readTimeout, Validator validator, String token) {
         HttpClient httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(CONNECT_TIMEOUT)
                 .build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(readTimeout);
-        this.restClient = RestClient.builder().baseUrl(baseUrl).requestFactory(requestFactory).build();
+        RestClient.Builder builder = RestClient.builder().baseUrl(baseUrl).requestFactory(requestFactory);
+        if (token != null && !token.isBlank()) {
+            builder.defaultHeader(TOKEN_HEADER, token);
+        }
+        this.restClient = builder.build();
         this.readTimeout = readTimeout;
         this.validator = validator;
     }
@@ -60,6 +79,20 @@ public class AiEngineClient {
 
     public AiPlaywrightResponse generatePlaywright(AiPlaywrightRequest request) {
         return post("/v1/playwright/generate", request, AiPlaywrightResponse.class);
+    }
+
+    /**
+     * Fire-and-forget request that wakes a sleeping AI engine (free hosting stops idle services).
+     * Called when the backend starts, so the first generation does not pay a second cold start.
+     */
+    @Async
+    public void wakeUp() {
+        try {
+            restClient.get().uri("/health").retrieve().toBodilessEntity();
+            log.info("AI engine is awake");
+        } catch (RestClientException e) {
+            log.info("AI engine wake-up ping failed (it may still be starting): {}", e.getMessage());
+        }
     }
 
     private <T> T post(String path, Object body, Class<T> responseType) {

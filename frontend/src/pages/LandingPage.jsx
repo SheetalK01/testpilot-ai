@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/layout/Logo';
+import TryDemoButton from '../components/TryDemoButton';
 import Navbar from '../components/layout/Navbar';
 import { PriorityBadge, TypeBadge } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -169,13 +170,14 @@ export default function LandingPage() {
                 <Button as={Link} to="/register" size="lg" data-testid="landing-cta">
                   Get started free <ArrowRight className="size-4" aria-hidden="true" />
                 </Button>
-                <Button as="a" href="#how-it-works" size="lg" variant="secondary">
+                <TryDemoButton />
+                <Button as="a" href="#how-it-works" size="lg" variant="ghost">
                   See how it works
                 </Button>
               </div>
               <p className="mt-6 flex items-center gap-2 text-sm text-subtle">
                 <ShieldCheck className="size-4 text-success" aria-hidden="true" />
-                Free · No credit card · Open source
+                Try it without signing up · Free · Open source
               </p>
             </div>
             <Demo />

@@ -1,0 +1,99 @@
+# Render Blueprint: the free public live demo (https://render.com/docs/blueprint-spec).
+# Three free services: static frontend, Spring Boot API, FastAPI AI engine (mock mode, no AI cost).
+# The MySQL database is an Aiven free-tier service; its connection details are entered in the
+# Render dashboard (sync: false), never committed.
+# Deploys run only after GitHub checks (CI) pass on the deployed branch.
+
+services:
+  - type: web
+    name: testpilot-ai-engine
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: ai_engine
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: AI_MODE
+        value: mock
+      - key: AI_ENGINE_TOKEN
+        generateValue: true
+
+  - type: web
+    name: testpilot-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: testpilot_backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_ENGINE_TOKEN
+        fromService:
+          name: testpilot-ai-engine
+          type: web
+          envVarKey: AI_ENGINE_TOKEN
+      # Public URL of the AI engine, e.g. https://testpilot-ai-engine.onrender.com
+      # (free services cannot use Render's private network).
+      - key: AI_ENGINE_URL
+        sync: false
+      # Aiven MySQL, e.g. jdbc:mysql://<host>:<port>/defaultdb?sslMode=REQUIRED
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # The frontend URL, e.g. https://testpilot-web.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: DEMO_ENABLED
+        value: "true"
+
+  - type: web
+    name: testpilot-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci --no-audit --no-fund && VITE_RELEASE=$RENDER_GIT_COMMIT npm run build
+    staticPublishPath: dist
+    autoDeployTrigger: checksPass
+    envVars:
+      # The API URL, e.g. https://testpilot-api.onrender.com
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_DEMO_MODE
+        value: "true"
+      - key: VITE_SENTRY_DSN
+        sync: false
+    routes:
+      # SPA fallback: unknown paths are client-side routes.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.onrender.com https://*.sentry.io; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

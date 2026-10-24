@@ -1,0 +1,24 @@
+# Production profile (SPRING_PROFILES_ACTIVE=prod), used by the free Render deployment.
+# Secrets have no defaults here: the app refuses to start if they are missing.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Free database plans allow few connections; a small pool is plenty for a demo.
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+testpilot:
+  jwt:
+    secret: ${JWT_SECRET}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+sentry:
+  environment: ${SENTRY_ENVIRONMENT:production}
+
+logging:
+  level:
+    root: INFO

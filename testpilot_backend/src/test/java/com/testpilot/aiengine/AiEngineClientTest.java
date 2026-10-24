@@ -38,6 +38,7 @@ class AiEngineClientTest {
     private HttpServer server;
     private final AtomicReference<String> lastRequestId = new AtomicReference<>();
     private final AtomicReference<String> lastBody = new AtomicReference<>();
+    private final AtomicReference<String> lastToken = new AtomicReference<>();
     private volatile int status = 200;
     private volatile String responseBody = "{}";
     private volatile long delayMs = 0;
@@ -62,6 +63,7 @@ class AiEngineClientTest {
 
     private void handle(HttpExchange exchange) throws IOException {
         lastRequestId.set(exchange.getRequestHeaders().getFirst(RequestIdFilter.HEADER));
+        lastToken.set(exchange.getRequestHeaders().getFirst(AiEngineClient.TOKEN_HEADER));
         lastBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
         try {
             Thread.sleep(delayMs);
@@ -153,6 +155,29 @@ class AiEngineClientTest {
         assertThatThrownBy(() -> client(Duration.ofMillis(300)).generateTestCases(STORY))
                 .isInstanceOf(AiEngineException.class)
                 .hasMessage("timed out after 0 s");
+    }
+
+    @Test
+    void sendsTheSharedTokenOnlyWhenConfigured() {
+        responseBody = "{\"model\":\"mock\",\"testCases\":[" + CASE_JSON + "]}";
+        String url = "http://127.0.0.1:" + server.getAddress().getPort();
+
+        new AiEngineClient(url, Duration.ofSeconds(5), VALIDATION.getValidator(), "s3cret").generateTestCases(STORY);
+        assertThat(lastToken.get()).isEqualTo("s3cret");
+
+        client().generateTestCases(STORY);
+        assertThat(lastToken.get()).isNull();
+    }
+
+    @Test
+    void wakeUpCallsHealthAndNeverThrows() {
+        responseBody = "{\"status\":\"ok\"}";
+        client().wakeUp();
+        assertThat(lastBody.get()).isEmpty();
+
+        AiEngineClient client = client();
+        server.stop(0);
+        client.wakeUp(); // unreachable: logged, not thrown
     }
 
     @Test

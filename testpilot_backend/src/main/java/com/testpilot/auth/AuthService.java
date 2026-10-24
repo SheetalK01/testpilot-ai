@@ -4,6 +4,7 @@ import com.testpilot.auth.dto.AuthResponse;
 import com.testpilot.auth.dto.LoginRequest;
 import com.testpilot.auth.dto.RegisterRequest;
 import com.testpilot.auth.dto.UserResponse;
+import com.testpilot.common.BadRequestException;
 import com.testpilot.common.ConflictException;
 import com.testpilot.common.NotFoundException;
 import java.util.Locale;
@@ -15,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
+
+    /** Accounts on this domain are throwaway demo accounts that get deleted automatically. */
+    public static final String RESERVED_DEMO_DOMAIN = "@demo.testpilot.invalid";
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
@@ -33,6 +37,9 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
+        if (email.endsWith(RESERVED_DEMO_DOMAIN)) {
+            throw new BadRequestException("This email domain is reserved for demo accounts");
+        }
         if (users.existsByEmail(email)) {
             throw new ConflictException("Email is already registered");
         }

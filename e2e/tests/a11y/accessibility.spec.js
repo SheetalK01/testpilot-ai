@@ -74,6 +74,15 @@ for (const colorScheme of ['light', 'dark']) {
       await expectNoSeriousViolations(page, testInfo);
     });
 
+    test('wake-up screen shown while the server sleeps', async ({ page, authedPage }, testInfo) => {
+      await page.route('**/actuator/health', (route) =>
+        route.fulfill({ status: 503, body: 'starting' }),
+      );
+      await page.goto('/');
+      await expect(page.getByTestId('wake-up-screen')).toBeVisible();
+      await expectNoSeriousViolations(page, testInfo);
+    });
+
     test('story page with cases, expanded steps and Playwright code', async ({
       page,
       authedPage,

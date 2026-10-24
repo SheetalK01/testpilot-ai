@@ -10,7 +10,9 @@
 export const TOKEN_KEY = 'tp_token';
 export const UNAUTHORIZED_EVENT = 'tp:unauthorized';
 
-const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+import { config } from './config';
+
+const BASE_URL = config.apiUrl;
 
 export class ApiError extends Error {
   constructor(status, message, errors = {}) {
@@ -86,11 +88,26 @@ async function downloadExport(storyId) {
   return link.download;
 }
 
+/** True when the backend answers its health check. Used to detect a sleeping free-tier server. */
+export async function isServerUp(timeoutMs = 8000) {
+  try {
+    const response = await fetch(`${BASE_URL}/actuator/health`, {
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export const api = {
   auth: {
     login: (body) => request('/auth/login', { method: 'POST', body }),
     register: (body) => request('/auth/register', { method: 'POST', body }),
     me: (signal) => request('/auth/me', { signal }),
+  },
+  demo: {
+    start: () => request('/demo/session', { method: 'POST' }),
   },
   dashboard: (signal) => request('/dashboard', { signal }),
   projects: {

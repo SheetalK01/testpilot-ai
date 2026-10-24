@@ -20,5 +20,7 @@ COPY --from=build /build/target/testpilot-backend.jar app.jar
 USER app
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=40s --retries=5 \
-    CMD curl -fsS http://localhost:8080/actuator/health || exit 1
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]
+    CMD curl -fsS "http://127.0.0.1:${PORT:-8080}/actuator/health" || exit 1
+# Tuned to start fast and fit in 512 MB (free hosting): small heap share, serial GC, C1 compiler only.
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=65 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k -XX:MaxMetaspaceSize=160m"
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

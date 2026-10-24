@@ -50,6 +50,7 @@ export function AuthProvider({ children }) {
     (details) => api.auth.register(details).then(authenticate),
     [authenticate],
   );
+  const startDemo = useCallback(() => api.demo.start().then(authenticate), [authenticate]);
   const logout = useCallback(() => {
     tokenStore.clear();
     setUser(null);
@@ -57,8 +58,8 @@ export function AuthProvider({ children }) {
   }, [navigate]);
 
   const value = useMemo(
-    () => ({ user, status, login, register, logout }),
-    [user, status, login, register, logout],
+    () => ({ user, status, login, register, startDemo, logout }),
+    [user, status, login, register, startDemo, logout],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

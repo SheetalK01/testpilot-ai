@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Mock mode pauses briefly so the frontend's "AI is generating..." animation is visible.
     mock_delay_seconds: float = Field(default=0.8, ge=0)
     log_level: str = "INFO"
+    # Shared secret the backend sends as X-Internal-Token. Empty = no check (local dev, tests).
+    # Set it on free hosting, where this service has a public URL.
+    ai_engine_token: str | None = Field(default=None, repr=False)
 
     @property
     def effective_mode(self) -> Literal["live", "mock"]:

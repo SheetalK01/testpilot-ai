@@ -34,8 +34,13 @@ testpilot:
   ai-engine:
     url: ${AI_ENGINE_URL:http://localhost:8000}
     timeout-seconds: ${AI_ENGINE_TIMEOUT_SECONDS:120}
+    token: ${AI_ENGINE_TOKEN:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:4173,http://localhost:3000}
+  demo:
+    enabled: ${DEMO_ENABLED:true}
+    max-sessions-per-hour: ${DEMO_MAX_SESSIONS_PER_HOUR:300}
+    ttl-hours: ${DEMO_TTL_HOURS:24}
 
 management:
   endpoints:
@@ -46,6 +51,23 @@ management:
     health:
       probes:
         enabled: true
+  info:
+    env:
+      enabled: true
+
+# Shown by /actuator/info; Render sets RENDER_GIT_COMMIT, which lets the post-deploy smoke test
+# wait until the new version is live.
+info:
+  app:
+    name: TestPilot AI
+    commit: ${RENDER_GIT_COMMIT:local}
+
+# Error tracking. Disabled unless SENTRY_DSN is set.
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:local}
+  send-default-pii: false
+  traces-sample-rate: 0.0
 
 springdoc:
   # Public on purpose: the API docs are part of the portfolio.

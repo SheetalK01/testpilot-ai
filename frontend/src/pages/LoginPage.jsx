@@ -1,6 +1,7 @@
 import { LogIn } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import AuthLayout from '../components/auth/AuthLayout';
+import TryDemoButton from '../components/TryDemoButton';
 import PasswordInput from '../components/auth/PasswordInput';
 import { emailError } from '../components/auth/validation';
 import { useForm } from '../components/forms/useForm';
@@ -69,6 +70,10 @@ export default function LoginPage() {
           Log in
         </Button>
       </form>
+      <div className="mt-6 flex items-center gap-3 text-xs text-subtle" aria-hidden="true">
+        <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
+      </div>
+      <TryDemoButton size="md" className="mt-6 w-full" />
     </AuthLayout>
   );
 }
