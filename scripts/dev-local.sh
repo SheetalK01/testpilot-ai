@@ -35,11 +35,16 @@ wait_for() {
 }
 
 # Values from the repo-root .env (e.g. AI_MODE, ANTHROPIC_API_KEY) are passed to every process.
+# An AI_MODE given on the command line wins over .env (e.g. AI_MODE=live ./scripts/dev-local.sh).
+CLI_AI_MODE="${AI_MODE:-}"
 if [[ -f "$ROOT/.env" ]]; then
   set -a
   # shellcheck disable=SC1091
   source "$ROOT/.env"
   set +a
+fi
+if [[ -n "$CLI_AI_MODE" ]]; then
+  export AI_MODE="$CLI_AI_MODE"
 fi
 # Local dev always uses the in-memory H2 database, even if .env points at the compose MySQL.
 unset DB_URL DB_USERNAME DB_PASSWORD

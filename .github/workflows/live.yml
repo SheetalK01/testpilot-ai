@@ -1,0 +1,63 @@
+name: Live smoke tests
+
+# Checks the public demo (free Render hosting, mock AI):
+# - after every successful CI run on main: Render deploys once checks pass, so this waits until the
+#   live API reports the new commit, then runs the @live Playwright suite (post-deploy verification);
+# - every 6 hours, as free uptime monitoring that also exercises the full user journey;
+# - on demand from the Actions tab.
+# Failures send GitHub's standard workflow-failure email.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke
+  cancel-in-progress: false
+
+jobs:
+  live:
+    name: Live demo (@live)
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LIVE_BASE_URL: ${{ vars.LIVE_BASE_URL }}
+      LIVE_API_URL: ${{ vars.LIVE_API_URL }}
+      LIVE_AI_URL: ${{ vars.LIVE_AI_URL }}
+      # After a deploy, wait until the API serves this commit before testing it.
+      EXPECTED_COMMIT: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check configuration
+        run: |
+          for name in LIVE_BASE_URL LIVE_API_URL LIVE_AI_URL; do
+            if [ -z "${!name}" ]; then echo "::error::Repository variable $name is not set"; exit 1; fi
+          done
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Install Playwright
+        working-directory: e2e
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Run live smoke tests
+        working-directory: e2e
+        run: npx playwright test
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: live-smoke-report
+          path: e2e/playwright-report
+          retention-days: 14
